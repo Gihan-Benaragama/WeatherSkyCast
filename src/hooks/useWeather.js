@@ -56,10 +56,22 @@ export function useWeatherForDate(locationTarget, selectedDate) {
         // Build base query
         let locQuery = '';
         let latLon   = null;
+        let resolvedName = '';
 
         if (typeof locationTarget === 'object') {
           latLon   = locationTarget;
           locQuery = `lat=${latLon.lat}&lon=${latLon.lon}`;
+          try {
+            const geoRes = await axios.get(
+              `${GEO}/reverse?lat=${latLon.lat}&lon=${latLon.lon}&limit=1&appid=${API_KEY}`
+            );
+            if (geoRes.data && geoRes.data.length > 0) {
+              const geoItem = geoRes.data[0];
+              resolvedName = `${geoItem.name}${geoItem.state ? ', ' + geoItem.state : ''}, ${geoItem.country}`;
+            }
+          } catch (geoErr) {
+            console.error('Error fetching reverse geocoding data:', geoErr);
+          }
         } else {
           locQuery = `q=${locationTarget}`;
         }
@@ -76,7 +88,15 @@ export function useWeatherForDate(locationTarget, selectedDate) {
             axios.get(`${BASE}/forecast?${locQuery}&appid=${API_KEY}&units=metric`),
           ]);
 
-          setCityName(`${wRes.data.name}, ${wRes.data.sys.country}`);
+          setCityName(resolvedName || `${wRes.data.name}, ${wRes.data.sys.country}`);
+
+          const timezoneOffset = fRes.data.city.timezone;
+          const formatLocalTime = (dt) => {
+            const localDate = new Date((dt + timezoneOffset) * 1000);
+            return localDate.toLocaleTimeString('en-LK', {
+              hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'UTC',
+            });
+          };
 
           result = {
             temp:      Math.round(wRes.data.main.temp),
@@ -94,24 +114,32 @@ export function useWeatherForDate(locationTarget, selectedDate) {
             clouds:    wRes.data.clouds.all,
             sunrise:   wRes.data.sys?.sunrise || null,
             sunset:    wRes.data.sys?.sunset || null,
-            cityName:  `${wRes.data.name}, ${wRes.data.sys?.country || ''}`,
+            cityName:  resolvedName || `${wRes.data.name}, ${wRes.data.sys?.country || ''}`,
             rain:      Math.round((wRes.data.clouds?.all || 0) * 0.8),
             uv:        7,
             source:    'live',
           };
 
-          // Hourly from forecast
-          const hourlyData = fRes.data.list.slice(0, 8).map(item => ({
-            time:  new Date(item.dt * 1000).toLocaleTimeString('en-LK', {
-                     hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Colombo',
-                   }),
+          // Prepend current weather to the hourly list as 'NOW'
+          const currentHourItem = {
+            time: 'NOW',
+            temp: Math.round(wRes.data.main.temp),
+            rain: fRes.data.list[0] ? Math.round((fRes.data.list[0].pop || 0) * 100) : 0,
+            wind: Math.round(wRes.data.wind.speed * 3.6),
+            icon: wRes.data.weather[0].main,
+            desc: wRes.data.weather[0].description,
+          };
+
+          const forecastItems = fRes.data.list.slice(0, 7).map(item => ({
+            time:  formatLocalTime(item.dt),
             temp:  Math.round(item.main.temp),
             rain:  Math.round((item.pop || 0) * 100),
             wind:  Math.round(item.wind.speed * 3.6),
             icon:  item.weather[0].main,
             desc:  item.weather[0].description,
           }));
-          setHourly(hourlyData);
+
+          setHourly([currentHourItem, ...forecastItems]);
 
         } else if (diff > 0 && diff <= 5) {
           // ── FUTURE (1–5 days) — from forecast API ───────
@@ -119,11 +147,25 @@ export function useWeatherForDate(locationTarget, selectedDate) {
             `${BASE}/forecast?${locQuery}&appid=${API_KEY}&units=metric`
           );
 
-          setCityName(`${fRes.data.city.name}, ${fRes.data.city.country}`);
+          setCityName(resolvedName || `${fRes.data.city.name}, ${fRes.data.city.country}`);
 
-          // Filter items matching selected date
+          const timezoneOffset = fRes.data.city.timezone;
+          
+          const getLocalDateString = (dt) => {
+            const localDate = new Date((dt + timezoneOffset) * 1000);
+            return localDate.toISOString().split('T')[0];
+          };
+
+          const formatLocalTime = (dt) => {
+            const localDate = new Date((dt + timezoneOffset) * 1000);
+            return localDate.toLocaleTimeString('en-LK', {
+              hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'UTC',
+            });
+          };
+
+          // Filter items matching selected date in local timezone
           const dayItems = fRes.data.list.filter(item =>
-            item.dt_txt.startsWith(selectedDate)
+            getLocalDateString(item.dt) === selectedDate
           );
 
           if (dayItems.length === 0) {
@@ -132,9 +174,15 @@ export function useWeatherForDate(locationTarget, selectedDate) {
             return;
           }
 
-          // Use midday item or first available
-          const main = dayItems.find(i => i.dt_txt.includes('12:00:00'))
-                    || dayItems[Math.floor(dayItems.length / 2)];
+          // Use midday item or first available in local time
+          const formatLocalHour = (dt) => {
+            const localDate = new Date((dt + timezoneOffset) * 1000);
+            return localDate.getUTCHours();
+          };
+          const main = dayItems.find(i => {
+            const localHour = formatLocalHour(i.dt);
+            return localHour >= 11 && localHour <= 13;
+          }) || dayItems[Math.floor(dayItems.length / 2)];
 
           const temps = dayItems.map(i => i.main.temp);
           result = {
@@ -153,14 +201,12 @@ export function useWeatherForDate(locationTarget, selectedDate) {
             rain:      Math.round((main.pop || 0) * 100),
             uv:        '--',
             source:    'forecast',
-            cityName:  `${fRes.data.city.name}, ${fRes.data.city.country}`,
+            cityName:  resolvedName || `${fRes.data.city.name}, ${fRes.data.city.country}`,
           };
 
-          // Hourly for that future day
+          // Hourly for that future day in local time
           const hourlyData = dayItems.map(item => ({
-            time:  new Date(item.dt * 1000).toLocaleTimeString('en-LK', {
-                     hour:'2-digit', minute:'2-digit', hour12:true, timeZone:'Asia/Colombo',
-                   }),
+            time:  formatLocalTime(item.dt),
             temp:  Math.round(item.main.temp),
             rain:  Math.round((item.pop || 0) * 100),
             wind:  Math.round(item.wind.speed * 3.6),
@@ -187,8 +233,8 @@ export function useWeatherForDate(locationTarget, selectedDate) {
           const wRes = await axios.get(
             `${BASE}/weather?${locQuery}&appid=${API_KEY}&units=metric`
           );
-          setCityName(`${wRes.data.name}, ${wRes.data.sys?.country || ''}`);
-          result.cityName = `${wRes.data.name}, ${wRes.data.sys?.country || ''}`;
+          setCityName(resolvedName || `${wRes.data.name}, ${wRes.data.sys?.country || ''}`);
+          result.cityName = resolvedName || `${wRes.data.name}, ${wRes.data.sys?.country || ''}`;
 
           setHourly([]);
         }

@@ -11,6 +11,7 @@ import HourlyForecast from './components/HourlyForecast';
 import SavedLocations from './components/SavedLocations';
 import MultiCityCompare from './components/MultiCityCompare';
 import DatePicker from './components/DatePicker';
+import ForecastPage from './components/ForecastPage';
 import './App.css';
 
 function weatherIcon(scene) {
@@ -58,6 +59,7 @@ export default function App() {
   const [date, setDate] = useState('');
   const [showCompare, setShowCompare] = useState(false);
   const [unit, setUnit] = useState('C');
+  const [activePage, setActivePage] = useState('home');
 
   const { weatherData, hourly, alerts, loading, error, cityName, dateType } =
     useWeatherForDate(locationTarget, selectedDate);
@@ -252,7 +254,14 @@ export default function App() {
 
           <div className="nav-links">
             {['Home', 'Forecast', 'Maps', 'Alerts', 'About'].map(l => (
-              <a key={l} className={`nav-link ${l === 'Home' ? 'active' : ''}`}>{l}</a>
+              <a
+                key={l}
+                className={`nav-link ${activePage===l.toLowerCase()?'active':''}`}
+                onClick={() => setActivePage(l.toLowerCase())}
+                style={{ cursor:'pointer' }}
+              >
+                {l}
+              </a>
             ))}
           </div>
 
@@ -303,156 +312,166 @@ export default function App() {
         {/* ALERTS */}
         {alerts?.length > 0 && <AlertBanner alerts={alerts} />}
 
-        {/* HERO */}
-        <div className="hero">
-          <div className="hero-left">
-            <div className="hero-tag">🌏 {displayCity || 'Weather App'}</div>
-            <h1 className="hero-title">
-              Accurate Weather.<br />
-              <span>Anytime, Anywhere.</span>
-            </h1>
-            <p className="hero-subtitle">
-              Check past, present and future weather
-              with cinematic animated skies.
-            </p>
+        {activePage === 'forecast' ? (
+          <ForecastPage
+            locationTarget={locationTarget}
+            displayCity={displayCity}
+            unit={unit}
+          />
+        ) : (
+          <>
+            {/* HERO */}
+            <div className="hero">
+              <div className="hero-left">
+                <div className="hero-tag">🌏 {displayCity || 'Weather App'}</div>
+                <h1 className="hero-title">
+                  Accurate Weather.<br />
+                  <span>Anytime, Anywhere.</span>
+                </h1>
+                <p className="hero-subtitle">
+                  Check past, present and future weather
+                  with cinematic animated skies.
+                </p>
 
-            {/* DATE PICKER — prominent placement */}
-            <div style={{ marginBottom: 20 }}>
-              <div style={{
-                fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-                letterSpacing: '1.3px', opacity: 0.45,
-                color: '#fff', marginBottom: 8,
-              }}>
-                📅 Select Any Date
-              </div>
-              <DatePicker
-                selectedDate={selectedDate}
-                onSelect={handleDateSelect}
-              />
-              {selectedDate && (
-                <div style={{
-                  marginTop: 8, fontSize: 12,
-                  color: 'rgba(255,255,255,0.45)',
-                }}>
-                  Showing: <span style={{
-                    color: dateType === 'today' ? '#60a5fa'
-                      : dateType === 'future' ? '#34d399' : '#a78bfa',
-                    fontWeight: 600,
+                {/* DATE PICKER — prominent placement */}
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{
+                    fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
+                    letterSpacing: '1.3px', opacity: 0.45,
+                    color: '#fff', marginBottom: 8,
                   }}>
-                    {getDateLabel()}
-                  </span>
-                  {' '}·{' '}
-                  {weatherData && <SourceBadge source={weatherData.source} />}
-                </div>
-              )}
-            </div>
-
-            <div className="hero-actions">
-              <button className="btn-primary">📊 View Details</button>
-              <button className="btn-secondary" onClick={() => setShowCompare(true)}>
-                🏙️ Compare Cities
-              </button>
-            </div>
-          </div>
-
-          {/* WEATHER CARD */}
-          <div className="hero-right">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={selectedDate + unit}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className="weather-hero-card"
-              >
-                <div className="whc-top">
-                  <div>
-                    <div className="whc-location">{displayCity}</div>
-                    <div className="whc-date">
-                      {new Date(selectedDate).toLocaleDateString('en-LK', {
-                        weekday: 'long', month: 'long', day: 'numeric',
-                      })}
-                    </div>
-                    <div style={{ marginTop: 4 }}>
+                    📅 Select Any Date
+                  </div>
+                  <DatePicker
+                    selectedDate={selectedDate}
+                    onSelect={handleDateSelect}
+                  />
+                  {selectedDate && (
+                    <div style={{
+                      marginTop: 8, fontSize: 12,
+                      color: 'rgba(255,255,255,0.45)',
+                    }}>
+                      Showing: <span style={{
+                        color: dateType === 'today' ? '#60a5fa'
+                          : dateType === 'future' ? '#34d399' : '#a78bfa',
+                        fontWeight: 600,
+                      }}>
+                        {getDateLabel()}
+                      </span>
+                      {' '}·{' '}
                       {weatherData && <SourceBadge source={weatherData.source} />}
                     </div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div className="whc-condition-badge">
-                      {weatherData?.desc?.toUpperCase() || '---'}
-                    </div>
-                    <div style={{
-                      fontSize: 28, marginTop: 8,
-                      filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))',
-                    }}>
-                      {weatherIcon(currentScene)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="whc-main">
-                  <div>
-                    <div className="whc-temp">
-                      {toDisplayTemp(weatherData?.temp)}
-                      <sup>°{unit}</sup>
-                    </div>
-                    <div style={{
-                      display: 'flex', gap: 8, marginTop: 4,
-                      fontSize: 12, opacity: 0.55,
-                    }}>
-                      <span>↓{toDisplayTemp(weatherData?.tempMin)}°</span>
-                      <span>↑{toDisplayTemp(weatherData?.tempMax)}°</span>
-                    </div>
-                  </div>
-                  <div className="whc-desc-block" style={{ marginLeft: 16 }}>
-                    <div className="whc-desc" style={{ textTransform: 'capitalize' }}>
-                      {weatherData?.desc || '--'}
-                    </div>
-                    <div className="whc-feels">
-                      Feels like {toDisplayTemp(weatherData?.feelsLike)}°{unit}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="whc-divider" />
-
-                <div className="whc-stats">
-                  <Stat icon="💧" label="Humidity" value={`${weatherData?.humidity ?? '--'}%`} />
-                  <Stat icon="💨" label="Wind" value={`${weatherData?.wind ?? '--'} km/h`} />
-                  <Stat icon="☔" label="Rain" value={`${weatherData?.rain ?? '--'}%`} />
-                  <Stat icon="🌡️" label="Pressure" value={`${weatherData?.pressure ?? '--'} hPa`} />
-                  {weatherData?.visibility !== '--' && weatherData?.visibility && (
-                    <Stat icon="👁️" label="Visibility" value={`${weatherData.visibility} km`} />
-                  )}
-                  {weatherData?.uv !== '--' && (
-                    <Stat icon="☀️" label="UV Index" value={`${weatherData?.uv} ${weatherData?.uv > 5 ? 'High' : 'Low'}`} />
                   )}
                 </div>
 
-                {/* Historical notice */}
-                {weatherData?.source === 'historical' && (
-                  <div style={{
-                    marginTop: 14, padding: '8px 12px',
-                    background: 'rgba(167,139,250,0.1)',
-                    border: '1px solid rgba(167,139,250,0.2)',
-                    borderRadius: 10, fontSize: 11,
-                    color: 'rgba(255,255,255,0.5)', lineHeight: 1.5,
-                  }}>
-                    📚 Historical data based on Sri Lanka climate patterns.
-                    Free API plan does not support exact historical records.
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
+                <div className="hero-actions">
+                  <button className="btn-primary">📊 View Details</button>
+                  <button className="btn-secondary" onClick={() => setShowCompare(true)}>
+                    🏙️ Compare Cities
+                  </button>
+                </div>
+              </div>
 
-        {/* HOURLY — only for today and near future */}
-        {hourly?.length > 0 && (
-          <div style={{ marginTop: 64 }}>
-            <HourlyForecast hourly={hourly} />
-          </div>
+              {/* WEATHER CARD */}
+              <div className="hero-right">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={selectedDate + unit}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="weather-hero-card"
+                  >
+                    <div className="whc-top">
+                      <div>
+                        <div className="whc-location">{displayCity}</div>
+                        <div className="whc-date">
+                          {new Date(selectedDate).toLocaleDateString('en-LK', {
+                            weekday: 'long', month: 'long', day: 'numeric',
+                          })}
+                        </div>
+                        <div style={{ marginTop: 4 }}>
+                          {weatherData && <SourceBadge source={weatherData.source} />}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div className="whc-condition-badge">
+                          {weatherData?.desc?.toUpperCase() || '---'}
+                        </div>
+                        <div style={{
+                          fontSize: 28, marginTop: 8,
+                          filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))',
+                        }}>
+                          {weatherIcon(currentScene)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="whc-main">
+                      <div>
+                        <div className="whc-temp">
+                          {toDisplayTemp(weatherData?.temp)}
+                          <sup>°{unit}</sup>
+                        </div>
+                        <div style={{
+                          display: 'flex', gap: 8, marginTop: 4,
+                          fontSize: 12, opacity: 0.55,
+                        }}>
+                          <span>↓{toDisplayTemp(weatherData?.tempMin)}°</span>
+                          <span>↑{toDisplayTemp(weatherData?.tempMax)}°</span>
+                        </div>
+                      </div>
+                      <div className="whc-desc-block" style={{ marginLeft: 16 }}>
+                        <div className="whc-desc" style={{ textTransform: 'capitalize' }}>
+                          {weatherData?.desc || '--'}
+                        </div>
+                        <div className="whc-feels">
+                          Feels like {toDisplayTemp(weatherData?.feelsLike)}°{unit}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="whc-divider" />
+
+                    <div className="whc-stats">
+                      <Stat icon="💧" label="Humidity" value={`${weatherData?.humidity ?? '--'}%`} />
+                      <Stat icon="💨" label="Wind" value={`${weatherData?.wind ?? '--'} km/h`} />
+                      <Stat icon="☔" label="Rain" value={`${weatherData?.rain ?? '--'}%`} />
+                      <Stat icon="🌡️" label="Pressure" value={`${weatherData?.pressure ?? '--'} hPa`} />
+                      {weatherData?.visibility !== '--' && weatherData?.visibility && (
+                        <Stat icon="👁️" label="Visibility" value={`${weatherData.visibility} km`} />
+                      )}
+                      {weatherData?.uv !== '--' && (
+                        <Stat icon="☀️" label="UV Index" value={`${weatherData?.uv} ${weatherData?.uv > 5 ? 'High' : 'Low'}`} />
+                      )}
+                    </div>
+
+                    {/* Historical notice */}
+                    {weatherData?.source === 'historical' && (
+                      <div style={{
+                        marginTop: 14, padding: '8px 12px',
+                        background: 'rgba(167,139,250,0.1)',
+                        border: '1px solid rgba(167,139,250,0.2)',
+                        borderRadius: 10, fontSize: 11,
+                        color: 'rgba(255,255,255,0.5)', lineHeight: 1.5,
+                      }}>
+                        📚 Historical data based on Sri Lanka climate patterns.
+                        Free API plan does not support exact historical records.
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+
+            {/* HOURLY — only for today and near future */}
+            {hourly?.length > 0 && (
+              <div style={{ marginTop: 64 }}>
+                <HourlyForecast hourly={hourly} />
+              </div>
+            )}
+          </>
         )}
 
         {/* BOTTOM SPACER */}

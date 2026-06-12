@@ -77,7 +77,7 @@ export default function HourlyForecast({ hourly }) {
 
                 {/* Temperature area chart */}
                 <div style={{ height: 140 }}>
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                         <AreaChart data={hourly} margin={{ top: 8, right: 8, left: -28, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="tempGrad" x1="0" y1="0" x2="0" y2="1">

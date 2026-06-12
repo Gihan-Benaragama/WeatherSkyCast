@@ -241,20 +241,92 @@ export default function WeatherBackground({ scene }) {
         // DRAW SUN + GOD RAYS
         // ═══════════════════════════════
         function drawSun() {
-            const sx = W * 0.80, sy = H * 0.13;
+            const sunConfigs = {
+                sunny: {
+                    sunY: 0.15,
+                    sunColor: '#fef08a',
+                    sunGlow: '#fefce8',
+                },
+                cloudy: {
+                    sunY: 0.20,
+                    sunColor: '#fde68a',
+                    sunGlow: '#fef3c7',
+                },
+            };
+            const cfg = sunConfigs[scene] || sunConfigs.sunny;
+            const sunY = cfg.sunY;
+            if (sunY > 1.02) return;
 
-            // Animated god rays
-            godRays.forEach(r => {
-                r.angle += r.speed;
-                const x1 = sx + Math.cos(r.angle) * 58;
-                const y1 = sy + Math.sin(r.angle) * 58;
-                const x2 = sx + Math.cos(r.angle) * (58 + r.len);
-                const y2 = sy + Math.sin(r.angle) * (58 + r.len);
-                const rg = ctx.createLinearGradient(x1, y1, x2, y2);
-                rg.addColorStop(0, `rgba(255,230,100,${r.alpha * 2.5})`);
-                rg.addColorStop(1, `rgba(255,180,40,0)`);
+            // Position sun at center of right hero card area
+            const sx = W * 0.62;
+            const sy = H * sunY;
+            const isLow = sunY > 0.70;
+
+            // Atmospheric diffusion — massive soft glow fills the card area
+            ctx.save();
+            const diffR = isLow ? H * 0.65 : H * 0.55;
+            const diff = ctx.createRadialGradient(sx, sy, 0, sx, sy, diffR);
+            if (isLow) {
+                diff.addColorStop(0, 'rgba(255,210,80,0.22)');
+                diff.addColorStop(0.25, 'rgba(255,160,40,0.14)');
+                diff.addColorStop(0.55, 'rgba(255,100,10,0.06)');
+                diff.addColorStop(1, 'rgba(0,0,0,0)');
+            } else {
+                diff.addColorStop(0, 'rgba(255,255,200,0.20)');
+                diff.addColorStop(0.3, 'rgba(255,230,120,0.10)');
+                diff.addColorStop(0.65, 'rgba(255,200,60,0.04)');
+                diff.addColorStop(1, 'rgba(0,0,0,0)');
+            }
+            ctx.fillStyle = diff;
+            ctx.beginPath();
+            ctx.arc(sx, sy, diffR, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Wide sky brightening behind card — fills the whole right half
+            ctx.save();
+            const brightR = W * 0.6;
+            const bright = ctx.createRadialGradient(sx, sy, 0, sx, sy, brightR);
+            bright.addColorStop(0, isLow
+                ? 'rgba(255,180,60,0.18)'
+                : 'rgba(255,255,180,0.14)');
+            bright.addColorStop(0.4, isLow
+                ? 'rgba(255,130,20,0.08)'
+                : 'rgba(255,230,100,0.06)');
+            bright.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = bright;
+            ctx.fillRect(0, 0, W, H);
+            ctx.restore();
+
+            // Horizontal lens flare streak across full width
+            if (!isLow) {
                 ctx.save();
-                ctx.lineWidth = r.width;
+                ctx.globalAlpha = 0.055;
+                const lf = ctx.createLinearGradient(0, sy, W, sy);
+                lf.addColorStop(0, 'rgba(255,250,200,0)');
+                lf.addColorStop(0.45, 'rgba(255,250,200,0.8)');
+                lf.addColorStop(0.65, 'rgba(255,250,200,1)');
+                lf.addColorStop(1, 'rgba(255,250,200,0)');
+                ctx.fillStyle = lf;
+                ctx.fillRect(0, sy - 3, W, 6);
+                ctx.restore();
+            }
+
+            // Animated god rays — emanate from sun center
+            for (let i = 0; i < 16; i++) {
+                const angle = (i / 16) * Math.PI * 2 + tick * 0.003;
+                const rayLen = (0.18 + Math.random() * 0.28) * Math.max(W, H);
+                const x1 = sx + Math.cos(angle) * 58;
+                const y1 = sy + Math.sin(angle) * 58;
+                const x2 = sx + Math.cos(angle) * (58 + rayLen);
+                const y2 = sy + Math.sin(angle) * (58 + rayLen);
+                const rg = ctx.createLinearGradient(x1, y1, x2, y2);
+                const ra = isLow ? 0.10 : 0.045;
+                rg.addColorStop(0, `rgba(255,235,120,${ra * 2.5})`);
+                rg.addColorStop(0.3, `rgba(255,210,80,${ra})`);
+                rg.addColorStop(1, 'rgba(255,180,40,0)');
+                ctx.save();
+                ctx.lineWidth = (12 + Math.random() * 28) * (isLow ? 1.5 : 1.0);
                 ctx.lineCap = 'round';
                 ctx.strokeStyle = rg;
                 ctx.beginPath();
@@ -262,31 +334,52 @@ export default function WeatherBackground({ scene }) {
                 ctx.lineTo(x2, y2);
                 ctx.stroke();
                 ctx.restore();
-            });
+            }
 
-            // Far glow
-            let sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, H * 0.55);
-            sg.addColorStop(0, 'rgba(255,240,140,0.14)');
-            sg.addColorStop(0.35, 'rgba(255,200,60,0.05)');
-            sg.addColorStop(1, 'rgba(255,130,0,0)');
-            ctx.fillStyle = sg; ctx.beginPath();
-            ctx.arc(sx, sy, H * 0.55, 0, Math.PI * 2); ctx.fill();
+            // Outer corona — large soft ring
+            ctx.save();
+            const cor2 = ctx.createRadialGradient(sx, sy, 58, sx, sy, 130);
+            cor2.addColorStop(0, `rgba(255,240,140,${isLow ? 0.35 : 0.22})`);
+            cor2.addColorStop(0.5, `rgba(255,210,80,${isLow ? 0.14 : 0.08})`);
+            cor2.addColorStop(1, 'rgba(255,160,0,0)');
+            ctx.fillStyle = cor2;
+            ctx.shadowColor = cfg.sunGlow;
+            ctx.shadowBlur = 60;
+            ctx.beginPath();
+            ctx.arc(sx, sy, 130, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
 
-            // Mid corona
-            sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, 90);
-            sg.addColorStop(0, 'rgba(255,255,210,0.9)');
-            sg.addColorStop(0.5, 'rgba(255,230,80,0.5)');
-            sg.addColorStop(1, 'rgba(255,160,0,0)');
-            ctx.fillStyle = sg; ctx.beginPath();
-            ctx.arc(sx, sy, 90, 0, Math.PI * 2); ctx.fill();
+            // Inner corona
+            ctx.save();
+            const cor = ctx.createRadialGradient(sx, sy, 0, sx, sy, 80);
+            cor.addColorStop(0, 'rgba(255,255,230,0.95)');
+            cor.addColorStop(0.4, 'rgba(255,235,110,0.55)');
+            cor.addColorStop(0.75, 'rgba(255,180,40,0.15)');
+            cor.addColorStop(1, 'rgba(255,140,0,0)');
+            ctx.fillStyle = cor;
+            ctx.shadowColor = cfg.sunGlow;
+            ctx.shadowBlur = 50;
+            ctx.beginPath();
+            ctx.arc(sx, sy, 80, 0, Math.PI * 2);
+            ctx.fill();
 
-            // Core disk
-            sg = ctx.createRadialGradient(sx - 12, sy - 12, 0, sx, sy, 52);
-            sg.addColorStop(0, '#fffef0');
-            sg.addColorStop(0.5, '#ffe566');
-            sg.addColorStop(1, '#ffb300');
-            ctx.fillStyle = sg; ctx.beginPath();
-            ctx.arc(sx, sy, 52, 0, Math.PI * 2); ctx.fill();
+            // Core disk — bright white center with colour gradient
+            const core = ctx.createRadialGradient(
+                sx - 12, sy - 12, 0,
+                sx, sy, isLow ? 48 : 40
+            );
+            core.addColorStop(0, '#ffffff');
+            core.addColorStop(0.3, '#fffde0');
+            core.addColorStop(0.6, cfg.sunColor);
+            core.addColorStop(1, isLow ? '#c2410c' : '#f59e0b');
+            ctx.fillStyle = core;
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 35;
+            ctx.beginPath();
+            ctx.arc(sx, sy, isLow ? 48 : 40, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
         }
 
         // ═══════════════════════════════
