@@ -12,6 +12,9 @@ import SavedLocations from './components/SavedLocations';
 import MultiCityCompare from './components/MultiCityCompare';
 import DatePicker from './components/DatePicker';
 import ForecastPage from './components/ForecastPage';
+import AboutPage from './components/AboutPage';
+import MapPage from './components/MapPage';
+
 import './App.css';
 
 function weatherIcon(scene) {
@@ -256,9 +259,9 @@ export default function App() {
             {['Home', 'Forecast', 'Maps', 'Alerts', 'About'].map(l => (
               <a
                 key={l}
-                className={`nav-link ${activePage===l.toLowerCase()?'active':''}`}
+                className={`nav-link ${activePage === l.toLowerCase() ? 'active' : ''}`}
                 onClick={() => setActivePage(l.toLowerCase())}
-                style={{ cursor:'pointer' }}
+                style={{ cursor: 'pointer' }}
               >
                 {l}
               </a>
@@ -312,13 +315,25 @@ export default function App() {
         {/* ALERTS */}
         {alerts?.length > 0 && <AlertBanner alerts={alerts} />}
 
-        {activePage === 'forecast' ? (
+        {activePage === 'forecast' && (
           <ForecastPage
             locationTarget={locationTarget}
             displayCity={displayCity}
             unit={unit}
           />
-        ) : (
+        )}
+
+        {activePage === 'maps' && (
+          <MapPage
+            locationTarget={locationTarget}
+            displayCity={displayCity}
+            unit={unit}
+          />
+        )}
+
+        {activePage === 'about' && <AboutPage />}
+
+        {activePage !== 'forecast' && activePage !== 'about' && activePage !== 'maps' && (
           <>
             {/* HERO */}
             <div className="hero">
