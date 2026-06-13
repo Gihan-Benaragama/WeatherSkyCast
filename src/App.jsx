@@ -14,6 +14,7 @@ import DatePicker from './components/DatePicker';
 import ForecastPage from './components/ForecastPage';
 import AboutPage from './components/AboutPage';
 import MapPage from './components/MapPage';
+import WeatherDetailsPanel from './components/WeatherDetailsPanel';
 
 import './App.css';
 
@@ -61,6 +62,7 @@ export default function App() {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
   const [showCompare, setShowCompare] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [unit, setUnit] = useState('C');
   const [activePage, setActivePage] = useState('home');
 
@@ -248,6 +250,14 @@ export default function App() {
       <Toaster position="top-right" />
       <WeatherBackground scene={currentScene} />
       <MultiCityCompare open={showCompare} onClose={() => setShowCompare(false)} />
+      <WeatherDetailsPanel
+        open={showDetails}
+        onClose={() => setShowDetails(false)}
+        weatherData={weatherData}
+        hourly={hourly}
+        selectedDate={selectedDate}
+        unit={unit}
+      />
 
       <div className="ui-layer">
 
@@ -380,7 +390,7 @@ export default function App() {
                 </div>
 
                 <div className="hero-actions">
-                  <button className="btn-primary">📊 View Details</button>
+                  <button className="btn-primary" onClick={() => setShowDetails(true)}>📊 View Details</button>
                   <button className="btn-secondary" onClick={() => setShowCompare(true)}>
                     🏙️ Compare Cities
                   </button>

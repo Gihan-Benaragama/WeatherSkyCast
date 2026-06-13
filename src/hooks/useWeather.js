@@ -118,6 +118,7 @@ export function useWeatherForDate(locationTarget, selectedDate) {
             rain:      Math.round((wRes.data.clouds?.all || 0) * 0.8),
             uv:        7,
             source:    'live',
+            coord:     wRes.data.coord,
           };
 
           // Prepend current weather to the hourly list as 'NOW'
@@ -202,6 +203,7 @@ export function useWeatherForDate(locationTarget, selectedDate) {
             uv:        '--',
             source:    'forecast',
             cityName:  resolvedName || `${fRes.data.city.name}, ${fRes.data.city.country}`,
+            coord:     fRes.data.city.coord,
           };
 
           // Hourly for that future day in local time
@@ -235,6 +237,8 @@ export function useWeatherForDate(locationTarget, selectedDate) {
           );
           setCityName(resolvedName || `${wRes.data.name}, ${wRes.data.sys?.country || ''}`);
           result.cityName = resolvedName || `${wRes.data.name}, ${wRes.data.sys?.country || ''}`;
+          result.coord = wRes.data.coord;
+
 
           setHourly([]);
         }
