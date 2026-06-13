@@ -131,7 +131,7 @@ function AQIRing({ aqi, components }) {
     const r = 42, circ = 2 * Math.PI * r;
     const col = aqiColor(aqi);
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+        <div className="aqi-ring-container" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <div style={{ position: 'relative', width: 100, height: 100, flexShrink: 0 }}>
                 <svg width={100} height={100}>
                     <circle cx={50} cy={50} r={r} fill="none"
@@ -360,7 +360,7 @@ export default function ForecastPage({ locationTarget, displayCity, unit = 'C' }
     const aqiComp = airData?.components;
 
     return (
-        <div style={{
+        <div className="forecast-page-container" style={{
             padding: '0 48px 48px',
             color: '#fff',
             maxWidth: 1400,
@@ -384,7 +384,7 @@ export default function ForecastPage({ locationTarget, displayCity, unit = 'C' }
                 }}>
                     📅 Extended Forecast
                 </div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                <div className="forecast-header-row" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                     <div>
                         <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: '-1px', lineHeight: 1.1 }}>
                             {displayCity || 'Weather Forecast'}
@@ -418,6 +418,7 @@ export default function ForecastPage({ locationTarget, displayCity, unit = 'C' }
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                     style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 20 }}
+                    className="forecast-stats-row"
                 >
                     {/* Current stats */}
                     <div style={{
@@ -545,7 +546,7 @@ export default function ForecastPage({ locationTarget, displayCity, unit = 'C' }
                     <div style={{ fontSize: 11, opacity: 0.38 }}>Click a day for hourly detail</div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10 }}>
+                <div className="forecast-7day-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 10 }}>
                     {sevenDays.map((day, i) => (
                         <motion.div
                             key={day.date}
@@ -717,9 +718,9 @@ export default function ForecastPage({ locationTarget, displayCity, unit = 'C' }
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -8 }}
                         transition={{ duration: 0.25 }}
-                        style={{ height: 160 }}
+                        style={{ height: 160, minWidth: 0, width: '100%', overflow: 'hidden' }}
                     >
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="99%" height="100%">
                             {activeTab === 'Precipitation' ? (
                                 <BarChart data={hourlyData} margin={{ top: 8, right: 8, left: -28, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -766,6 +767,7 @@ export default function ForecastPage({ locationTarget, displayCity, unit = 'C' }
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
                 style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}
+                className="forecast-bottom-row"
             >
                 {/* Precipitation 7-day */}
                 <div style={{
@@ -780,8 +782,8 @@ export default function ForecastPage({ locationTarget, displayCity, unit = 'C' }
                     <div style={{ fontSize: 11, opacity: 0.38, marginBottom: 16 }}>
                         7-day rain probability
                     </div>
-                    <div style={{ height: 140 }}>
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div style={{ height: 140, minWidth: 0, width: '100%', overflow: 'hidden' }}>
+                        <ResponsiveContainer width="99%" height="100%">
                             <BarChart data={precipData} margin={{ top: 4, right: 4, left: -32, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                                 <XAxis dataKey="day" tick={{ fill: 'rgba(255,255,255,0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
@@ -881,7 +883,7 @@ export default function ForecastPage({ locationTarget, displayCity, unit = 'C' }
                         }).filter(Boolean)}
 
                         {/* Notification CTA */}
-                        <div style={{
+                        <div className="highlights-cta-banner" style={{
                             marginTop: 6,
                             display: 'flex', alignItems: 'center',
                             justifyContent: 'space-between',

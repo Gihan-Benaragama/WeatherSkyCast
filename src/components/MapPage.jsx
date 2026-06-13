@@ -306,7 +306,7 @@ export default function MapPage({ locationTarget, displayCity, unit = 'C' }) {
       `}</style>
 
             {/* ── TOP BAR ──────────────────────────── */}
-            <div style={{
+            <div className="map-topbar" style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '8px 18px',
                 background: 'rgba(0,0,0,0.38)',
@@ -366,12 +366,13 @@ export default function MapPage({ locationTarget, displayCity, unit = 'C' }) {
             </div>
 
             {/* ── MAIN ROW ─────────────────────────── */}
-            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+            <div className="map-main-row" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
                 {/* SIDEBAR */}
                 <motion.div
                     initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
+                    className="map-sidebar"
                     style={{
                         width: 235, flexShrink: 0,
                         background: 'rgba(0,0,0,0.42)',
@@ -663,6 +664,7 @@ export default function MapPage({ locationTarget, displayCity, unit = 'C' }) {
                         key={activeLayer}
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
+                        className="map-legend-card"
                         style={{
                             position: 'absolute', right: 14, bottom: 74,
                             background: 'rgba(6,12,22,0.90)',
@@ -687,6 +689,7 @@ export default function MapPage({ locationTarget, displayCity, unit = 'C' }) {
                         initial={{ opacity: 0, y: 14 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
+                        className="map-scrubber"
                         style={{
                             position: 'absolute', bottom: 14, left: '50%',
                             transform: 'translateX(-50%)',
@@ -759,7 +762,7 @@ export default function MapPage({ locationTarget, displayCity, unit = 'C' }) {
             </div>
 
             {/* BOTTOM STRIP */}
-            <div style={{
+            <div className="map-bottom-strip" style={{
                 background: 'rgba(0,0,0,0.42)',
                 backdropFilter: 'blur(20px)',
                 borderTop: '1px solid rgba(255,255,255,0.07)',

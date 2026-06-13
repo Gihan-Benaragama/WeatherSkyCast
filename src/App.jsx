@@ -256,7 +256,7 @@ export default function App() {
           <div className="nav-logo"><span>⛅</span> SkyCast</div>
 
           <div className="nav-links">
-            {['Home', 'Forecast', 'Maps', 'Alerts', 'About'].map(l => (
+            {['Home', 'Forecast', 'Maps', 'About'].map(l => (
               <a
                 key={l}
                 className={`nav-link ${activePage === l.toLowerCase() ? 'active' : ''}`}
@@ -334,7 +334,7 @@ export default function App() {
         {activePage === 'about' && <AboutPage />}
 
         {activePage !== 'forecast' && activePage !== 'about' && activePage !== 'maps' && (
-          <>
+          <div className="home-page-container">
             {/* HERO */}
             <div className="hero">
               <div className="hero-left">
@@ -482,11 +482,11 @@ export default function App() {
 
             {/* HOURLY — only for today and near future */}
             {hourly?.length > 0 && (
-              <div style={{ marginTop: 64 }}>
+              <div className="hourly-forecast-wrapper" style={{ marginTop: 64 }}>
                 <HourlyForecast hourly={hourly} />
               </div>
             )}
-          </>
+          </div>
         )}
 
         {/* BOTTOM SPACER */}

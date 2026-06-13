@@ -119,7 +119,7 @@ export default function AboutPage() {
     }, []);
 
     return (
-        <div style={{ color: '#fff', overflowX: 'hidden' }}>
+        <div className="about-page-container" style={{ color: '#fff', overflowX: 'hidden' }}>
             <style>{`
         .about-scrollbar::-webkit-scrollbar { display: none; }
         .skill-pill {
@@ -136,6 +136,7 @@ export default function AboutPage() {
             {/* ══ HERO ══════════════════════════════════════════ */}
             <div
                 ref={heroRef}
+                className="about-hero-section"
                 style={{
                     position: 'relative',
                     padding: '60px 48px 50px',
@@ -154,7 +155,7 @@ export default function AboutPage() {
                     transition: 'left 0.8s ease, top 0.8s ease',
                 }} />
 
-                <div style={{
+                <div className="about-hero-grid" style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr',
                     gap: 60,
@@ -389,7 +390,7 @@ export default function AboutPage() {
 
             {/* ══ STATS BAR ══════════════════════════════════════ */}
             <FadeUp delay={0.05}>
-                <div style={{
+                <div className="about-stats-grid" style={{
                     margin: '0 48px 28px',
                     background: 'linear-gradient(135deg, rgba(59,130,246,0.18) 0%, rgba(99,102,241,0.12) 100%)',
                     border: '1px solid rgba(96,165,250,0.25)',
@@ -423,7 +424,7 @@ export default function AboutPage() {
             </FadeUp>
 
             {/* ══ FEATURES ═══════════════════════════════════════ */}
-            <div style={{ padding: '0 48px', marginBottom: 28 }}>
+            <div className="about-section-wrapper" style={{ padding: '0 48px', marginBottom: 28 }}>
                 <FadeUp>
                     <div style={{ marginBottom: 22 }}>
                         <div style={{
@@ -438,7 +439,7 @@ export default function AboutPage() {
                     </div>
                 </FadeUp>
 
-                <div style={{
+                <div className="about-features-grid" style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(3,1fr)',
                     gap: 14,
@@ -473,7 +474,7 @@ export default function AboutPage() {
             </div>
 
             {/* ══ TIMELINE ═══════════════════════════════════════ */}
-            <div style={{ padding: '0 48px', marginBottom: 28 }}>
+            <div className="about-section-wrapper" style={{ padding: '0 48px', marginBottom: 28 }}>
                 <FadeUp>
                     <div style={{ marginBottom: 22 }}>
                         <div style={{
@@ -539,7 +540,7 @@ export default function AboutPage() {
             </div>
 
             {/* ══ TEAM ═══════════════════════════════════════════ */}
-            <div style={{ padding: '0 48px', marginBottom: 28 }}>
+            <div className="about-section-wrapper" style={{ padding: '0 48px', marginBottom: 28 }}>
                 <FadeUp>
                     <div style={{ marginBottom: 22 }}>
                         <div style={{
@@ -554,7 +555,7 @@ export default function AboutPage() {
                     </div>
                 </FadeUp>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
+                <div className="about-team-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
                     {TEAM.map((m, i) => (
                         <FadeUp key={m.name} delay={i * 0.1}>
                             <GCard>
@@ -596,7 +597,7 @@ export default function AboutPage() {
 
             {/* ══ CTA BANNER ═════════════════════════════════════ */}
             <FadeUp>
-                <div style={{
+                <div className="about-cta-banner" style={{
                     margin: '0 48px 48px',
                     background: 'linear-gradient(135deg,rgba(59,130,246,0.22) 0%,rgba(124,58,237,0.18) 100%)',
                     border: '1px solid rgba(96,165,250,0.25)',
